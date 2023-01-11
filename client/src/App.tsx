@@ -2,13 +2,14 @@ import React, { useState } from "react";
 import { Button, Form, FormGroup, FormText, Input, Label } from "reactstrap";
 import axios from "axios";
 import "./App.css";
+import ReactAudioPlayer from "react-audio-player";
 
 const App = () => {
-  const [selectedFile, changeSelectedFile] = useState<FileList | null>(null);
+  const [selectedFile, changeSelectedFile] = useState<File | null>(null);
 
   const onFileChange = (event: React.FormEvent<HTMLInputElement>) => {
     if (event.currentTarget.files)
-      changeSelectedFile(event.currentTarget.files);
+      changeSelectedFile(event.currentTarget.files[0]);
   };
 
   const onFileUpload = async () => {
@@ -16,10 +17,10 @@ const App = () => {
       const formData = new FormData();
       formData.append(
         "myFile",
-        new Blob([new Uint8Array(await selectedFile[0].arrayBuffer())], {
-          type: selectedFile[0].type,
+        new Blob([new Uint8Array(await selectedFile.arrayBuffer())], {
+          type: selectedFile.type,
         }),
-        selectedFile[0].name
+        selectedFile.name
       );
       axios
         .post("/upload_file", formData)
@@ -45,13 +46,25 @@ const App = () => {
             />
             <FormText>Upload or drop an mp3 file to split here</FormText>
           </FormGroup>
-          <Button
-            color="primary"
-            onClick={onFileUpload}
-            disabled={!selectedFile}
-          >
-            Start
-          </Button>
+          <div className="bottom_audio_interactive">
+            {selectedFile && (
+              <>
+                <p>Original Audio:</p>
+                <ReactAudioPlayer
+                  src={URL.createObjectURL(selectedFile)}
+                  controls
+                />
+              </>
+            )}
+            <Button
+              className="start_button"
+              color="primary"
+              onClick={onFileUpload}
+              disabled={!selectedFile}
+            >
+              Start
+            </Button>
+          </div>
         </Form>
       </header>
     </div>
